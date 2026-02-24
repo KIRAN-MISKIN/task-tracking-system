@@ -2,6 +2,48 @@
 
 This project provides a backend system for user authentication and profile management with centralized error handling and session tracking.
 
+## Getting Started
+
+### Prerequisites
+- **Node.js** (v18+ recommended)
+*   **MongoDB** (Local or Atlas)
+
+### Database
+This project uses **MongoDB** as the primary database with **Mongoose** for object modeling.
+
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd task-tracking-system/backend
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup**:
+    Create a `.env` file in the `backend` directory and add the following:
+    ```env
+    PORT=3000
+    NODE_ENV=development
+    DB_URL=mongodb://localhost:2017/taskTrackerDB  # Or your Altas URI
+    JWT_SECRET=your_super_secret_jwt_key
+    JWT_EXPIRES_IN=1d
+    BCRYPT_SALT=12
+    ```
+
+4.  **Run the application**:
+    ```bash
+    # Development mode
+    npm run dev
+
+    # Production mode
+    npm start
+    ```
+
 ## Base URL
 `http://localhost:3000`
 
