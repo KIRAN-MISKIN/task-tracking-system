@@ -21,6 +21,36 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
+// Request logger
+app.use((req, res, next) => {
+    console.log(`\n--- ${new Date().toISOString()} ---`);
+    console.log(`${req.method} ${req.originalUrl}`);
+    if (req.body && Object.keys(req.body).length > 0) {
+        console.log('Body:', JSON.stringify(req.body, null, 2));
+    }
+
+    // Capture the original send to log response status and error messages
+    const oldSend = res.send;
+    res.send = function (data) {
+        console.log(`Response: ${res.statusCode}`);
+
+        // If it's an error (4xx or 5xx), try to log the message
+        if (res.statusCode >= 400 && data) {
+            try {
+                const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+                if (parsedData && parsedData.message) {
+                    console.log(`Error Message: ${parsedData.message}`);
+                }
+            } catch (e) {
+                // If not JSON or can't be parsed, just quiet
+            }
+        }
+        return oldSend.apply(res, arguments);
+    };
+
+    next();
+});
+
 app.get("/health", (req, res) => {
     res.send("OK");
 });
