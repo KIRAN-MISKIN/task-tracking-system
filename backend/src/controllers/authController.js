@@ -99,19 +99,34 @@ exports.protect = catchAsync(async (req, res, next) => {
         req.headers.authorization &&
         req.headers.authorization.startsWith('Bearer')
     ) {
-        token = req.headers.authorization.split(' ')[1];
+        // Robust extraction: handle "Bearer <token>", "Bearer  <token>", or "Bearer Bearer <token>"
+        const parts = req.headers.authorization.split(' ').filter(p => p !== '');
+        token = parts[parts.length - 1]; // Get the last part which should be the token
     } else if (req.cookies.jwt) {
         token = req.cookies.jwt;
     }
 
-    if (!token) {
+    // Clean up token if it's wrapped in quotes (common in some clients)
+    if (token && typeof token === 'string') {
+        token = token.trim();
+        if (token.startsWith('"') && token.endsWith('"')) {
+            token = token.slice(1, -1);
+        }
+    }
+
+    if (!token || token === 'loggedout' || token === 'null' || token === 'undefined') {
         return next(
             new AppError('You are not logged in! Please log in to get access.', 401)
         );
     }
 
     // 2) Verification token
-    const decoded = await require('util').promisify(jwt.verify)(token, JWT_SECRET);
+    let decoded;
+    try {
+        decoded = await require('util').promisify(jwt.verify)(token, JWT_SECRET);
+    } catch (err) {
+        return next(err);
+    }
 
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);

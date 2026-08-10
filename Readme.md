@@ -2,6 +2,48 @@
 
 This project provides a backend system for user authentication and profile management with centralized error handling and session tracking.
 
+## Getting Started
+
+### Prerequisites
+- **Node.js** (v18+ recommended)
+*   **MongoDB** (Local or Atlas)
+
+### Database
+This project uses **MongoDB** as the primary database with **Mongoose** for object modeling.
+
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd task-tracking-system/backend
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup**:
+    Create a `.env` file in the `backend` directory and add the following:
+    ```env
+    PORT=3000
+    NODE_ENV=development
+    DB_URL=mongodb://localhost:2017/taskTrackerDB  # Or your Altas URI
+    JWT_SECRET=your_super_secret_jwt_key
+    JWT_EXPIRES_IN=1d
+    BCRYPT_SALT=12
+    ```
+
+4.  **Run the application**:
+    ```bash
+    # Development mode
+    npm run dev
+
+    # Production mode
+    npm start
+    ```
+
 ## Base URL
 `http://localhost:3000`
 
@@ -187,6 +229,150 @@ Updates the user's name, bio, or profile picture.
     -H "Content-Type: application/json" \
     -d '{"name": "Updated Name"}'
     ```
+
+---
+
+## Task Management Endpoints (Protected)
+
+### 1. Create Task
+Creates a new task and assigns it via email.
+
+*   **URL**: `/api/tasks`
+*   **Method**: `POST`
+*   **Headers**: `Authorization: Bearer <TOKEN>`
+*   **Body**:
+    ```json
+    {
+      "title": "Build API",
+      "description": "Implement Task CRUD operations",
+      "dueDate": "2026-12-31",
+      "team": "Backend",
+      "assignedToEmail": "kiran@example.com"
+    }
+    ```
+*   **Responses**:
+    *   **201 Created**:
+        ```json
+        {
+          "status": "success",
+          "data": {
+            "task": {
+              "_id": "65d...",
+              "title": "Build API",
+              "description": "Implement Task CRUD operations",
+              "dueDate": "2026-12-31T00:00:00.000Z",
+              "status": "backlog",
+              "team": "Backend",
+              "assignedTo": "65d...",
+              "createdBy": "65d...",
+              "collaborators": ["Creator Name", "Assignee Name"]
+            }
+          }
+        }
+        ```
+    *   **400 Bad Request (Missing Fields)**:
+        ```json
+        {
+          "status": "fail",
+          "message": "Please provide title, description and dueDate!"
+        }
+        ```
+    *   **400 Bad Request (Assignee Not Found)**:
+        ```json
+        {
+          "status": "fail",
+          "message": "No user found with that email address for assignment."
+        }
+        ```
+
+*   **CURL**:
+    ```bash
+    curl -X POST http://localhost:3000/api/tasks \
+    -H "Authorization: Bearer your_token_here" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "title": "Build API",
+      "description": "Implement Task CRUD operations",
+      "dueDate": "2026-12-31",
+      "assignedToEmail": "kiran@example.com"
+    }'
+    ```
+
+---
+
+### 2. Get All Tasks
+Retrieves a list of all tasks.
+
+*   **URL**: `/api/tasks`
+*   **Method**: `GET`
+*   **Headers**: `Authorization: Bearer <TOKEN>`
+*   **Responses**:
+    *   **200 OK**:
+        ```json
+        {
+          "status": "success",
+          "results": 1,
+          "data": {
+            "tasks": [ ... ]
+          }
+        }
+        ```
+
+---
+
+### 3. Get Task Details
+Retrieves details of a specific task.
+
+*   **URL**: `/api/tasks/:id`
+*   **Method**: `GET`
+*   **Headers**: `Authorization: Bearer <TOKEN>`
+*   **Responses**:
+    *   **200 OK**:
+        ```json
+        {
+          "status": "success",
+          "data": {
+            "task": { ... }
+          }
+        }
+        ```
+
+---
+
+### 4. Update Task
+Updates an existing task's details or status.
+
+*   **URL**: `/api/tasks/:id`
+*   **Method**: `PATCH`
+*   **Headers**: `Authorization: Bearer <TOKEN>`
+*   **Body**: (Optional fields)
+    ```json
+    {
+      "status": "In progress",
+      "team": "Updated Team"
+    }
+    ```
+*   **Responses**:
+    *   **200 OK**:
+        ```json
+        {
+          "status": "success",
+          "data": {
+            "task": { ... }
+          }
+        }
+        ```
+
+---
+
+### 5. Delete Task
+Removes a task from the system.
+
+*   **URL**: `/api/tasks/:id`
+*   **Method**: `DELETE`
+*   **Headers**: `Authorization: Bearer <TOKEN>`
+*   **Responses**:
+    *   **204 No Content**
 
 ---
 
